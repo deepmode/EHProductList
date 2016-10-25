@@ -58,6 +58,10 @@
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     
+    //add protocal
+    //add KVO
+    //add image fetching
+    //add category 
 }
 
 
