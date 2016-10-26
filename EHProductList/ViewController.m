@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import "DataModel.h"
 
-@interface ViewController () <UITableViewDelegate,UITableViewDataSource>
+@interface ViewController () <UITableViewDelegate,UITableViewDataSource,DataModelDelegate>
 @property (nonatomic,strong) NSArray *dataSrc; /* array of DataModel */
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @end
@@ -42,6 +42,7 @@
             NSString *details = [NSString stringWithFormat:@"Detail %d",i];
             NSArray *colorOptions = [self colorList];
             DataModel *obj = [[DataModel alloc] initWithName: name detail:details colorOptions:colorOptions];
+            //obj.delegate = self;
             [array addObject:obj];
         }
         _dataSrc = array;
@@ -82,14 +83,56 @@
     cell.backgroundColor = [UIColor whiteColor];
     cell.textLabel.text = @"";
     cell.detailTextLabel.text = @"";
+    cell.accessoryType=UITableViewCellAccessoryNone;
     
-    DataModel *model = self.dataSrc[indexPath.row];
-    cell.textLabel.text = model.name;
-    cell.detailTextLabel.text = model.details;
-    if (model.colorOptions.count > 0) {
-        cell.backgroundColor = model.colorOptions[0];
+    DataModel *dm = self.dataSrc[indexPath.row];
+    cell.textLabel.text = dm.name;
+    cell.detailTextLabel.text = dm.details;
+    
+    if ([dm myStatus]) {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    
+    if (dm.colorOptions.count > 0) {
+        cell.backgroundColor = dm.colorOptions[0];
     }
     return cell;
 }
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row < self.dataSrc.count ) {
+        
+        id dataModel = self.dataSrc[indexPath.row];
+        if ([dataModel isKindOfClass:[DataModel class]]) {
+            DataModel *dm = (DataModel *)dataModel;
+            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+            
+            BOOL lastStatus = dm.myStatus;
+            [dm updateStatus:!lastStatus];
+            //dispatch_queue_t q = dispatch_queue_create("DownloadQ", nil);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (dm.myStatus) {
+                    cell.accessoryType = UITableViewCellAccessoryCheckmark;
+                } else {
+                    cell.accessoryType = UITableViewCellAccessoryNone;
+                }
+            });
+            
+        }
+    }
+}
+
+- (void) updateUIWidthModel:(DataModel *)dm {
+    if (dm.myStatus) {
+        
+    }
+}
+
+//MARK: -- DataModelDelegate
+- (void) dataModelDidSelected:(DataModel *)dataModel {
+}
+
 
 @end
